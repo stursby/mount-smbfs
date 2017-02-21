@@ -5,10 +5,25 @@ var Shell = require('child_process').exec;
 var VOLUMES = '/Volumes';
 var SHARE = null;
 
-function mount(sharepath, cb) {
+function mountSMB(sharepath, cb) {
 	SHARE = sharepath;
 	var command =
 		['osascript -e \'mount volume "smb://',
+		path.normalize(SHARE),
+		"\"'"];
+	Shell(command.join(''), function(err, stdout, stderr) {
+		var mountpath;
+		if (!stderr && !err) {
+			mountpath = getMountedPath();
+		}
+		cb(stderr, mountpath);
+	});
+}
+
+function mountAFP(sharepath, cb) {
+	SHARE = sharepath;
+	var command =
+		['osascript -e \'mount volume "afp://',
 		path.normalize(SHARE),
 		"\"'"];
 	Shell(command.join(''), function(err, stdout, stderr) {
@@ -41,7 +56,8 @@ function getMountedPath() {
 }
 
 module.exports = {
-	mount: mount,
+	mountSMB: mountSMB,
+	mountAFP: mountAFP,
 	umount: umount,
 	getPath: getMountedPath
 };
